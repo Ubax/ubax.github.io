@@ -38,6 +38,24 @@ class Value {
         return this._value;
     }
 }
+class Fraction {
+    constructor(nominator, denominator) {
+        this.numerator = nominator;
+        this.denominator = denominator;
+    }
+    getValue() {
+        return this.numerator / this.denominator;
+    }
+}
+class Multiply {
+    constructor(a, b) {
+        this.a = a;
+        this.b = b;
+    }
+    getValue() {
+        return this.a * this.b;
+    }
+}
 class Simulation {
     constructor(ball1, ball2) {
         this.p1 = 0;
@@ -51,61 +69,51 @@ class Simulation {
     get ball2() {
         return this._ball2;
     }
-    step(tau) {
+    step(h) {
+        let l2 = this.ball2.line;
+        let l1 = this.ball1.line;
+        let m1 = this.ball1.mass;
+        let m2 = this.ball2.mass;
+        let mu = m2 / m1;
+        let rod = l1;
+        const g = GRAVITY;
+        let sqr = x => x * x;
+        let A1 = (alpha1, alpha2, p1, p2) => new Fraction(p1 * p2 * Math.sin(alpha1 - alpha2), l1 * l2 * (m1 + m2 * sqr(Math.sin(alpha1 - alpha2)))).getValue();
+        let A2 = (alpha1, alpha2, p1, p2) => new Fraction(new Multiply(sqr(p1) * sqr(l2) * m2 - 2 * p1 * p2 * m2 * l1 * l2 * Math.cos(alpha1 - alpha2) + sqr(p2) * sqr(l1) * (m1 + m2), Math.sin(2 * (alpha1 - alpha2))).getValue(), 2 * sqr(l1) * sqr(l2) * sqr(m1 + m2 * sqr(Math.sin(alpha1 - alpha2)))).getValue();
         let f1 = (alpha1, alpha2, p1, p2) => {
-            var num11 = p1 - p2 * Math.cos(alpha1 - alpha2);
-            var den11 = this._ball1.mass * this._ball1.line * this._ball1.line * (1 + (this._ball2.mass / this._ball1.mass) * Math.sin(alpha1 - alpha2) * Math.sin(alpha1 - alpha2));
-            var res1 = num11 / den11;
-            return res1;
+            return new Fraction(p1 * l2 - p2 * l1 * Math.cos(alpha1 - alpha2), sqr(l1) * l2 * (m1 + m2 * sqr(Math.sin(alpha1 - alpha2)))).getValue();
         };
         let f2 = (alpha1, alpha2, p1, p2) => {
-            var num21 = p2 * (1 + (this._ball2.mass / this._ball1.mass)) - p1 * (this._ball2.mass / this._ball1.mass) * Math.cos(alpha1 - alpha2);
-            var den21 = this._ball1.mass * this._ball1.line * this._ball1.line * (1 + (this._ball2.mass / this._ball1.mass) * Math.sin(alpha1 - alpha2) * Math.sin(alpha1 - alpha2));
-            var res2 = num21 / den21;
-            return res2;
+            return new Fraction(p2 * (m1 + m2) * l1 - p1 * m2 * l2 * Math.cos(alpha1 - alpha2), m2 * l1 * sqr(l2) * (m1 + m2 * sqr(Math.sin(alpha1 - alpha2)))).getValue();
         };
         let f3 = (alpha1, alpha2, p1, p2) => {
-            var num31 = p1 * p2 * Math.sin(alpha1 - alpha2);
-            var den31 = this._ball1.mass * this._ball1.line * this._ball1.line * (1 + (this._ball2.mass / this._ball1.mass) * Math.pow(Math.sin(alpha1 - alpha2), 2));
-            var a1 = num31 / den31;
-            var num32 = (p1 * p1 * (this._ball2.mass / this._ball1.mass) - 2 * p1 * p2 * (this._ball2.mass / this._ball1.mass) * Math.cos(alpha1 - alpha2) + p2 * p2 * (1 + (this._ball2.mass / this._ball1.mass))) * Math.sin(2 * (alpha1 - alpha2));
-            var den32 = 2 * this._ball1.mass * this._ball1.line * this._ball1.line * Math.pow((1 + (this._ball2.mass / this._ball1.mass) * Math.sin(alpha1 - alpha2) * Math.sin(alpha1 - alpha2)), 2);
-            var a2 = num32 / den32;
-            var res3 = -this._ball1.mass * (1 + (this._ball2.mass / this._ball1.mass)) * GRAVITY * this._ball1.line * Math.sin(alpha1) - a1 + a2;
-            return res3;
+            return -(m1 + m2) * GRAVITY * l1 * Math.sin(alpha1) - A1(alpha1, alpha2, p1, p2) + A2(alpha1, alpha2, p1, p2);
         };
         let f4 = (alpha1, alpha2, p1, p2) => {
-            var num41 = p1 * p2 * Math.sin(alpha1 - alpha2);
-            var den41 = this._ball1.mass * this._ball1.line * this._ball1.line * (1 + (this._ball2.mass / this._ball1.mass) * Math.pow(Math.sin(alpha1 - alpha2), 2));
-            var a1 = num41 / den41;
-            var num42 = (p1 * p1 * (this._ball2.mass / this._ball1.mass) - 2 * p1 * p2 * (this._ball2.mass / this._ball1.mass) * Math.cos(alpha1 - alpha2) + p2 * p2 * (1 + (this._ball2.mass / this._ball1.mass))) * Math.sin(2 * (alpha1 - alpha2));
-            var den42 = 2 * this._ball1.mass * this._ball1.line * this._ball1.line * Math.pow((1 + (this._ball2.mass / this._ball1.mass) * Math.sin(alpha1 - alpha2) * Math.sin(alpha1 - alpha2)), 2);
-            var a2 = num42 / den42;
-            var res4 = -this._ball1.mass * (this._ball2.mass / this._ball1.mass) * GRAVITY * this._ball1.line * Math.sin(alpha2) + a1 - a2;
-            return res4;
+            return -m2 * GRAVITY * l2 * Math.sin(alpha2) + A1(alpha1, alpha2, p1, p2) - A2(alpha1, alpha2, p1, p2);
         };
         var k1 = new Array();
         var k2 = new Array();
         var k3 = new Array();
         var k4 = new Array();
-        k1[0] = f1(this._ball1.alpha, this._ball2.alpha, this.p1, this.p2) * tau;
-        k1[1] = f2(this._ball1.alpha, this._ball2.alpha, this.p1, this.p2) * tau;
-        k1[2] = f3(this._ball1.alpha, this._ball2.alpha, this.p1, this.p2) * tau;
-        k1[3] = f4(this._ball1.alpha, this._ball2.alpha, this.p1, this.p2) * tau;
-        k2[0] = f1(this._ball1.alpha + 1 / 2 * k1[0], this._ball2.alpha + 1 / 2 * k1[1], this.p1 + 1 / 2 * k1[2], this.p2 + 1 / 2 * k1[3]) * tau;
-        k2[1] = f2(this._ball1.alpha + 1 / 2 * k1[0], this._ball2.alpha + 1 / 2 * k1[1], this.p1 + 1 / 2 * k1[2], this.p2 + 1 / 2 * k1[3]) * tau;
-        k2[2] = f3(this._ball1.alpha + 1 / 2 * k1[0], this._ball2.alpha + 1 / 2 * k1[1], this.p1 + 1 / 2 * k1[2], this.p2 + 1 / 2 * k1[3]) * tau;
-        k2[3] = f4(this._ball1.alpha + 1 / 2 * k1[0], this._ball2.alpha + 1 / 2 * k1[1], this.p1 + 1 / 2 * k1[2], this.p2 + 1 / 2 * k1[3]) * tau;
-        k3[0] = f1(this._ball1.alpha + 1 / 2 * k2[0], this._ball2.alpha + 1 / 2 * k2[1], this.p1 + 1 / 2 * k2[2], this.p2 + 1 / 2 * k2[3]) * tau;
-        k3[1] = f2(this._ball1.alpha + 1 / 2 * k2[0], this._ball2.alpha + 1 / 2 * k2[1], this.p1 + 1 / 2 * k2[2], this.p2 + 1 / 2 * k2[3]) * tau;
-        k3[2] = f3(this._ball1.alpha + 1 / 2 * k2[0], this._ball2.alpha + 1 / 2 * k2[1], this.p1 + 1 / 2 * k2[2], this.p2 + 1 / 2 * k2[3]) * tau;
-        k3[3] = f4(this._ball1.alpha + 1 / 2 * k2[0], this._ball2.alpha + 1 / 2 * k2[1], this.p1 + 1 / 2 * k2[2], this.p2 + 1 / 2 * k2[3]) * tau;
-        k4[0] = f1(this._ball1.alpha + k3[0], this._ball2.alpha + k3[1], this.p1 + k3[2], this.p2 + k3[3]) * tau;
-        k4[1] = f2(this._ball1.alpha + k3[0], this._ball2.alpha + k3[1], this.p1 + k3[2], this.p2 + k3[3]) * tau;
-        k4[2] = f3(this._ball1.alpha + k3[0], this._ball2.alpha + k3[1], this.p1 + k3[2], this.p2 + k3[3]) * tau;
-        k4[3] = f4(this._ball1.alpha + k3[0], this._ball2.alpha + k3[1], this.p1 + k3[2], this.p2 + k3[3]) * tau;
-        this._ball1.alpha = this._ball1.alpha + 1 / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]);
-        this._ball2.alpha = this._ball2.alpha + 1 / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]);
+        k1[0] = f1(this.ball1.alpha, this.ball2.alpha, this.p1, this.p2) * h;
+        k1[1] = f2(this.ball1.alpha, this.ball2.alpha, this.p1, this.p2) * h;
+        k1[2] = f3(this.ball1.alpha, this.ball2.alpha, this.p1, this.p2) * h;
+        k1[3] = f4(this.ball1.alpha, this.ball2.alpha, this.p1, this.p2) * h;
+        k2[0] = f1(this.ball1.alpha + 1 / 2 * k1[0], this.ball2.alpha + 1 / 2 * k1[1], this.p1 + 1 / 2 * k1[2], this.p2 + 1 / 2 * k1[3]) * h;
+        k2[1] = f2(this.ball1.alpha + 1 / 2 * k1[0], this.ball2.alpha + 1 / 2 * k1[1], this.p1 + 1 / 2 * k1[2], this.p2 + 1 / 2 * k1[3]) * h;
+        k2[2] = f3(this.ball1.alpha + 1 / 2 * k1[0], this.ball2.alpha + 1 / 2 * k1[1], this.p1 + 1 / 2 * k1[2], this.p2 + 1 / 2 * k1[3]) * h;
+        k2[3] = f4(this.ball1.alpha + 1 / 2 * k1[0], this.ball2.alpha + 1 / 2 * k1[1], this.p1 + 1 / 2 * k1[2], this.p2 + 1 / 2 * k1[3]) * h;
+        k3[0] = f1(this.ball1.alpha + 1 / 2 * k2[0], this.ball2.alpha + 1 / 2 * k2[1], this.p1 + 1 / 2 * k2[2], this.p2 + 1 / 2 * k2[3]) * h;
+        k3[1] = f2(this.ball1.alpha + 1 / 2 * k2[0], this.ball2.alpha + 1 / 2 * k2[1], this.p1 + 1 / 2 * k2[2], this.p2 + 1 / 2 * k2[3]) * h;
+        k3[2] = f3(this.ball1.alpha + 1 / 2 * k2[0], this.ball2.alpha + 1 / 2 * k2[1], this.p1 + 1 / 2 * k2[2], this.p2 + 1 / 2 * k2[3]) * h;
+        k3[3] = f4(this.ball1.alpha + 1 / 2 * k2[0], this.ball2.alpha + 1 / 2 * k2[1], this.p1 + 1 / 2 * k2[2], this.p2 + 1 / 2 * k2[3]) * h;
+        k4[0] = f1(this.ball1.alpha + k3[0], this.ball2.alpha + k3[1], this.p1 + k3[2], this.p2 + k3[3]) * h;
+        k4[1] = f2(this.ball1.alpha + k3[0], this.ball2.alpha + k3[1], this.p1 + k3[2], this.p2 + k3[3]) * h;
+        k4[2] = f3(this.ball1.alpha + k3[0], this.ball2.alpha + k3[1], this.p1 + k3[2], this.p2 + k3[3]) * h;
+        k4[3] = f4(this.ball1.alpha + k3[0], this.ball2.alpha + k3[1], this.p1 + k3[2], this.p2 + k3[3]) * h;
+        this.ball1.alpha = this.ball1.alpha + 1 / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]);
+        this.ball2.alpha = this.ball2.alpha + 1 / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]);
         this.p1 = this.p1 + 1 / 6 * (k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2]);
         this.p2 = this.p2 + 1 / 6 * (k1[3] + 2 * k2[3] + 2 * k3[3] + k4[3]);
     }
@@ -131,10 +139,13 @@ class Simulation {
         contextBalls.arc(hx + this.ball1.x + this.ball2.x, -this.ball1.y - this.ball2.y, this.ball2.mass, 0, 2 * Math.PI);
         contextBalls.fill();
         contextBalls.closePath();
+        contextGraph.fillStyle = "#A5E6BA";
         contextGraph.fillRect(hx + this.ball1.x + this.ball2.x, -this.ball1.y - this.ball2.y, 2, 2);
+        contextGraph.fillStyle = "#4F345A";
+        contextGraph.fillRect(hx + this.ball1.x, -this.ball1.y, 2, 2);
     }
-    stepAndDraw(tau, canvasGraphId, canvasBallsId) {
-        this.step(tau);
+    stepAndDraw(h, canvasGraphId, canvasBallsId) {
+        this.step(h);
         this.draw(canvasGraphId, canvasBallsId);
     }
 }

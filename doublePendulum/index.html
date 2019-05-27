@@ -39,15 +39,27 @@
           />
           <div class="value"></div>
         </div>
-        <div class="input" id="line">
-          <div class="label">Line</div>
+        <div class="input" id="line1">
+          <div class="label">Line1</div>
           <input
             type="range"
             min="20"
             max="150"
             value="70"
             class="slider"
-            id="line"
+            id="line1"
+          />
+          <div class="value"></div>
+        </div>
+        <div class="input" id="line2">
+          <div class="label">Line2</div>
+          <input
+            type="range"
+            min="20"
+            max="150"
+            value="70"
+            class="slider"
+            id="line2"
           />
           <div class="value"></div>
         </div>
@@ -79,10 +91,10 @@
           <div class="label">Speed</div>
           <input
             type="range"
-            min="0.05"
+            min="0.01"
             max="2"
-            step="0.05"
-            value="0.3"
+            step="0.01"
+            value="0.1"
             class="slider"
             id="speed"
           />
@@ -91,8 +103,65 @@
         <div class="row">
           <div class="button" id="start">Start</div>
           <div class="button" id="stop">Stop</div>
+          <div class="button" id="clear">Clear</div>
         </div>
       </form>
+      <div class="container" id="credentials">
+        <h2>Wzory na wachadło</h2>
+        Korzystając z wyprowadzeń omówionych na stronie
+        <a href="https://www.math24.net/double-pendulum/"
+          >https://www.math24.net/double-pendulum/</a
+        >
+        otrzymujemy następujące wzory: <br />
+        \( \alpha_1' = \frac{
+        {{p_1}{l_2} – {p_2}{l_1}\cos \left( {{\alpha _1} – {\alpha _2}}\right)}}
+        {{l_1^2{l_2}\left[ {{m_1} + {m_2}{\sin^2}\left( {{\alpha _1} – {\alpha _2
+        }}\right)} \right]} } \\ \alpha_2' = \frac{
+        {{p_2}\left( {{m_1} + {m_2}} \right){l_1} –{p_1}{m_2}{l_2}\cos \left({{\alpha _1} – {\alpha _2
+        }}\right)}}
+        {{{m_2}{l_1}l_2^2\left[ {{m_1} + {m_2}\,{\sin^2}\left( {{\alpha _1} – {\alpha _2
+        }}\right)} \right]} }\\ p_1' = – \left({{m_1} + {m_2}} \right)g{l_1}\sin
+        {\alpha _1}-{ {A_1} + {A_2}} \\ p_2' = – {m_2}g{l_2}\sin {\alpha _2}+{{A_1} – {A_2}}
+        \)
+        <br />
+        gdzie:
+        <br />
+        \( {{A_1} \text{ = }}\kern0pt{ \frac{{{p_1}{p_2}\sin\left( {{\alpha _1} – {\alpha _2}}
+        \right)}}{{{l_1}{l_2}\left[ {{m_1} + {m_2}\,{{\sin }^2}\left( {{\alpha _1} – {\alpha _2}}
+        \right)} \right]}},} \)
+        <br />
+        \(
+        {{A_2} \text{ = }}\kern0pt{ \frac{1}{{2l_1^2l_2^2{{\left[ {{m_1} + {m_2}\,{{\sin }^2}\left( {{\alpha _1} – {\alpha _2}}
+        \right)} \right]}^2}}} \cdot}\kern0pt { \Big[ {p_1^2{m_2}l_2^2 }}-{{  2{p_1}{p_2}{m_2}{l_1}{l_2}\cos \left( {{\alpha _1} – {\alpha _2}}
+        \right) }}+{{   p_2^2\left( {{m_1} + {m_2}} \right)l_1^2} \Big]
+        \cdot}\kern0pt { \sin \left[ {2\left(
+        {{\alpha _1} – {\alpha _2}} \right)} \right]} \)
+        <br />
+
+        <h2>Metoda Rungego-Kutty</h2>
+        <p>
+          Symulacja wykonana została z wykorzystaniem metody Rungego-Kutty 4
+          rzędu. Metoda ta polega na obliczeniu kolejnych wartości \(y\) znając
+          początkowe \(y(x_0)=y_0\), z równania różniczkowego w postaci
+          \(y'=f(x,y)\).
+        </p>
+        <p>
+          Metoda ta przestawiona w postaci rekurencyjnej, gdzie \(h\) jest
+          dowolnym krokiem całkownia:
+        </p>
+        <p>
+          \( y_{n+1} = y_n + {\Delta y_n} \)
+        </p>
+        <p>
+          \( {\Delta y_n} = \frac{1}{6}\left( k_1 + k_2 + k_3 + k_4\right) \)
+        </p>
+        <p>gdzie:</p>
+        <p>
+          \( k_1 = hf(x_n, y_n),\\ k_2 = hf(x_n + \frac{h}{2}, y_n +
+          frac{1}{2}k_1),\\ k_3 = hf(x_n + \frac{h}{2}, y_n + \frac{1}{2}k_2),\\
+          k_4 = hf(x_n + h, y_n + k_3), \)
+        </p>
+      </div>
       <div class="container" id="credentials">
         Autor: <b>Jakub Tkacz</b><br />
         Wstęp teoretyczny:
@@ -102,11 +171,17 @@
       </div>
     </div>
   </body>
+  <script
+    type="text/javascript"
+    async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"
+  ></script>
   <script src="simulation.js"></script>
   <script>
     let angle1 = new Value(0);
     let angle2 = new Value(0);
-    let line = new Value(0);
+    let line1 = new Value(0);
+    let line2 = new Value(0);
     let mass1 = new Value(0);
     let mass2 = new Value(0);
     let tau = new Value(0);
@@ -115,18 +190,33 @@
 
     document.querySelector(".button#start").onclick = () => {
       if (animationIntervalId != null) clearInterval(animationIntervalId);
-      let ball1 = new Ball(angle1.value, line.value, mass1.value);
-      let ball2 = new Ball(angle2.value, line.value, mass2.value);
+      let ball1 = new Ball(angle1.value, line1.value, mass1.value);
+      let ball2 = new Ball(angle2.value, line2.value, mass2.value);
       simulation = new Simulation(ball1, ball2);
       animationIntervalId = setInterval(
-        () => simulation.stepAndDraw(0.3, "graph", "balls"),
-        30
+        () => simulation.stepAndDraw(tau.value, "graph", "balls"),
+        10
       );
     };
 
     document.querySelector(".button#stop").onclick = () => {
       if (animationIntervalId != null) clearInterval(animationIntervalId);
     };
+
+    let clear = () => {
+      const canvasGraph = document.getElementById("graph");
+      let contextGraph = canvasGraph.getContext("2d");
+      const canvasBalls = document.getElementById("balls");
+      let contextBalls = canvasBalls.getContext("2d");
+      contextBalls.fillStyle = "rgba(0,0,0,0)";
+      contextBalls.clearRect(0, 0, canvasBalls.width, canvasBalls.height);
+      contextBalls.fillStyle = "rgb(0,0,0)";
+      contextGraph.fillStyle = "rgba(0,0,0,0)";
+      contextGraph.clearRect(0, 0, canvasGraph.width, canvasGraph.height);
+      contextGraph.fillStyle = "rgb(0,0,0)";
+    };
+
+    document.querySelector(".button#clear").onclick = clear;
 
     let setOnChange = (id, observableVariable) => {
       let onChangeFunction = (sliderNode, id) => {
@@ -141,7 +231,8 @@
 
     setOnChange("angle1", angle1);
     setOnChange("angle2", angle2);
-    setOnChange("line", line);
+    setOnChange("line1", line1);
+    setOnChange("line2", line2);
     setOnChange("mass1", mass1);
     setOnChange("mass2", mass2);
     setOnChange("speed", tau);
