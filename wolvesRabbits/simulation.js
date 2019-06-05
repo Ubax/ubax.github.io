@@ -59,7 +59,7 @@ class DataSet {
     }
 }
 class Symulation {
-    constructor(width, height, wolfEatRatio, wolfWalkRatio, rabbitBirthRatio, rabbitApperance, wolfApperance, rectSize = 2) {
+    constructor(width, height, wolfEatRatio, wolfWalkRatio, rabbitBirthRatio, rabbitApperance, wolfApperance, wolfDeathRatio, rabbitDeathRatio, rectSize = 2) {
         this.width = width;
         this.height = height;
         if (wolfApperance + rabbitApperance >= 1)
@@ -70,6 +70,8 @@ class Symulation {
         this.rabbitApperance = rabbitApperance;
         this.wolfApperance = wolfApperance;
         this.rectSize = rectSize;
+        this.wolfDeathRatio = wolfDeathRatio;
+        this.rabbitDeathRatio = rabbitDeathRatio;
         this.initData();
     }
     initData() {
@@ -97,11 +99,12 @@ class Symulation {
                 if (Math.random() < this.wolfEatRatio)
                     this.newData[x + neibourghX][y + neibourghY] = FieldType.Wolf;
             }
-            if (this.data[x + neibourghX][y + neibourghY] == FieldType.Empty) {
-                if (Math.random() < this.wolfWalkRatio) {
-                    this.newData[x][y] = FieldType.Empty;
-                    this.newData[x + neibourghX][y + neibourghY] = FieldType.Wolf;
-                }
+            else if (Math.random() < this.wolfDeathRatio) {
+                this.newData[x][y] = FieldType.Empty;
+            }
+            else if (this.data[x + neibourghX][y + neibourghY] == FieldType.Empty && Math.random() < this.wolfWalkRatio) {
+                this.newData[x][y] = FieldType.Empty;
+                this.newData[x + neibourghX][y + neibourghY] = FieldType.Wolf;
             }
         }
         if (this.data[x][y] == FieldType.Rabbit) {
@@ -110,6 +113,9 @@ class Symulation {
             if (this.data[x + neibourghX][y + neibourghY] == FieldType.Empty) {
                 if (Math.random() < this.rabbitBirthRatio)
                     this.newData[x + neibourghX][y + neibourghY] = FieldType.Rabbit;
+            }
+            else if (Math.random() < this.rabbitDeathRatio) {
+                this.newData[x][y] = FieldType.Empty;
             }
         }
     }

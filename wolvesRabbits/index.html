@@ -50,6 +50,11 @@
           />
           <div class="value"></div>
         </div>
+        <div class="input" id="rabbitDeath">
+            <div class="label">Death of rabbit probability</div>
+            <input type="range" min="0" max="1" step="0.01" value="0.4" class="slider" id="rabbitDeath" />
+            <div class="value"></div>
+        </div>
         <div class="input" id="wolfEat">
           <div class="label">Wolf eat probability</div>
           <input
@@ -75,6 +80,11 @@
             id="wolfWalk"
           />
           <div class="value"></div>
+        </div>
+        <div class="input" id="wolfDeath">
+            <div class="label">Death of wolf probability</div>
+            <input type="range" min="0" max="1" step="0.01" value="0.4" class="slider" id="wolfDeath" />
+            <div class="value"></div>
         </div>
         <div class="input" id="wolfApperance">
           <div class="label">Wolf apperance probability</div>
@@ -108,6 +118,64 @@
           <div class="button" id="restart" onclick="restart()">Restart</div>
         </div>
       </form>
+      <div class="container">
+        <h3>Cellular automaton</h3>
+        <p>
+          Cellular automaton is consist of regular grid of cells, each in one of
+          finite number of states.
+        </p>
+        <p>
+          At the beggining (at moment t=0) each cell is in defined state. Than
+          after one iteration (at moment t=1) every cell is updated, accordingly
+          to the defined rule. The rule is defined and same for all iterations.
+        </p>
+        <h3>States</h3>
+        <p>
+            In this example cell can be in three states:
+            <ul>
+                <li>Wolf - black</li>
+                <li>Rabbit - white</li>
+                <li>Empty (grass) - green</li>
+            </ul>
+        </p>
+        <h3>Rules</h3>
+        <p>
+            In cellular automaton all rules are based on neibourghood. In this example neibourgh is one of eight fields, selected randomly. 
+        </p>
+        <p>
+            If the central field is <b>wolf</b> then:
+            <ul>
+                <li>If the neibourgh is empty, wolf is walking to that field or dies from hunger</li>
+                <li>If the neibourgh is rabbit, wolf is eating a rabbit and new wolf appears in place of rabbit</li>
+                <li>If the neibourgh is wolf, dies from hunger</li>
+            </ul>
+        </p>
+        <p>
+            If the central field is <b>rabbit</b> then:
+            <ul>
+                <li>If the neibourgh is empty, rabbits eats grass and new rabbit appers in place of grass</li>
+                <li>If the neibourgh is rabbit or wolf, rabbit dies</li>
+            </ul>
+        </p>
+        <p>
+            If the central field is <b>grass</b> then nothing happens
+        </p>
+        <p>
+            All of rules written above happens with certain probability specified as input
+        </p>
+        <h3>Conclusions</h3>
+        <p>
+            <ul>
+                <li>If rabbits are very strong their population decrease fast to 6000 and wolves become three times stronger</li>
+                <li>If wolves are very strong, both spieces extinct</li>
+                <li>In average case rabbits poluation becomes nearly twice as big as rabbits</li>
+            </ul>
+        </p>
+      </div>
+        <div class="row container" id="credentials">
+            <div id="author">Jakub Tkacz</div>
+            <div id="date">2019 June</div>
+        </div>
     </div>
   </body>
   <script src="simulation.js"></script>
@@ -119,6 +187,8 @@
     let rabbitBirthRatio = new Value(0);
     let rabbitApperance = new Value(0.2);
     let wolfApperance = new Value(0.1);
+    let wolfDeath = new Value(0.1);
+    let rabbitDeath = new Value(0.1);
     let rectSize = new Value(0);
 
     let symulation;
@@ -133,6 +203,8 @@
     setOnChange("rabbitApperance", rabbitApperance);
     setOnChange("wolfApperance", wolfApperance);
     setOnChange("rectSize", rectSize);
+    setOnChange("wolfDeath", wolfDeath);
+    setOnChange("rabbitDeath", rabbitDeath);
     init();
 
     function setOnChange(id, observableVariable) {
@@ -155,6 +227,8 @@
         rabbitBirthRatio.value,
         rabbitApperance.value,
         wolfApperance.value,
+        wolfDeath.value,
+        rabbitDeath.value,
         rectSize.value
       );
     }

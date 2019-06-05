@@ -108,6 +108,11 @@ body .main form .button {
 body .main form .button:hover {
   opacity: 1;
 }
+body .main #credentials {
+  margin-top: 10px;
+  justify-content: space-between;
+  color: #111;
+}
 .row {
   display: flex;
   flex-direction: row;
