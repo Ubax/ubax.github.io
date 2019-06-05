@@ -1,0 +1,73 @@
+<HTML>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Symulacja wachadła podwójnego</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/normalize.css@8.0.1/normalize.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="main">
+      <div class="row" id="stats">
+        <div class="row">
+          <div class="label">Wolves</div>
+          <div class="value" id="wolves"></div>
+        </div>
+        <div class="row">
+          <div class="label">Rabbits</div>
+          <div class="value" id="rabbits"></div>
+        </div>
+      </div>
+      <canvas id="fields" width="800" height="800"> </canvas>
+      <canvas id="graph" width="800" height="200"> </canvas>
+      <form>
+        <div class="row">
+          <div class="button" id="start" onclick="start()">Start</div>
+          <div class="button" id="pause" onclick="pause()">Pause</div>
+          <div class="button" id="restart" onclick="restart()">Restart</div>
+        </div>
+      </form>
+    </div>
+  </body>
+  <script src="simulation.js"></script>
+  <script>
+    let width = new Value(0);
+    let height = new Value(0);
+    let wolfEatRatio = new Value(0);
+    let wolfWalkRatio = new Value(0);
+    let rabbitBirthRatio = new Value(0);
+    let rabbitApperance = new Value(0);
+    let rectSize = new Value(0);
+
+    let symulation;
+    let animationFrame = null;
+
+    const wolvesNode = document.querySelector("#wolves");
+    const rabbitsNode = document.querySelector("#rabbits");
+
+    init();
+
+    function init() {
+      symulation = new Symulation(200, 200, 0.1, 1, 1, 0.1, 0.1, 4);
+    }
+    function restart() {
+      init();
+    }
+    function start() {
+      let animation = () => {
+        symulation.step();
+        symulation.draw("fields");
+        symulation.drawGraph("graph");
+        symulation.printStats(wolvesNode, rabbitsNode);
+        animationFrame = requestAnimationFrame(animation);
+      };
+      animationFrame = requestAnimationFrame(animation);
+    }
+    function pause() {
+      if (animationFrame != null) cancelAnimationFrame(animationFrame);
+    }
+  </script>
+</HTML>
