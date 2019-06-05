@@ -91,7 +91,8 @@ class Symulation {
         let neibourghX = this.randomNeibourg();
         let neibourghY = this.randomNeibourg();
         if (this.data[x][y] == FieldType.Wolf) {
-            this.dataHistory.addWolf();
+            if (x > 0 && y > 0 && x <= this.width && y <= this.height)
+                this.dataHistory.addWolf();
             if (this.data[x + neibourghX][y + neibourghY] == FieldType.Rabbit) {
                 if (Math.random() < this.wolfEatRatio)
                     this.newData[x + neibourghX][y + neibourghY] = FieldType.Wolf;
@@ -104,7 +105,8 @@ class Symulation {
             }
         }
         if (this.data[x][y] == FieldType.Rabbit) {
-            this.dataHistory.addRabbit();
+            if (x > 0 && y > 0 && x <= this.width && y <= this.height)
+                this.dataHistory.addRabbit();
             if (this.data[x + neibourghX][y + neibourghY] == FieldType.Empty) {
                 if (Math.random() < this.rabbitBirthRatio)
                     this.newData[x + neibourghX][y + neibourghY] = FieldType.Rabbit;

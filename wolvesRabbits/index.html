@@ -13,17 +13,95 @@
     <div class="main">
       <div class="row" id="stats">
         <div class="row">
-          <div class="label">Wolves</div>
+          <div class="label"><img src="img/wolf.svg" alt="Wolves" /></div>
           <div class="value" id="wolves"></div>
         </div>
         <div class="row">
-          <div class="label">Rabbits</div>
+          <div class="label"><img src="img/rabbit.svg" alt="Rabbits" /></div>
           <div class="value" id="rabbits"></div>
         </div>
       </div>
       <canvas id="fields" width="800" height="800"> </canvas>
       <canvas id="graph" width="800" height="200"> </canvas>
       <form>
+        <div class="input" id="rabbitBirth">
+          <div class="label">Rabit birth probability</div>
+          <input
+            type="range"
+            min="0.01"
+            max="1"
+            step="0.01"
+            value="0.7"
+            class="slider"
+            id="rabbitBirth"
+          />
+          <div class="value"></div>
+        </div>
+        <div class="input" id="rabbitApperance">
+          <div class="label">Rabbit apperance probability</div>
+          <input
+            type="range"
+            min="0.01"
+            max="0.5"
+            step="0.01"
+            value="0.1"
+            class="slider"
+            id="rabbitApperance"
+          />
+          <div class="value"></div>
+        </div>
+        <div class="input" id="wolfEat">
+          <div class="label">Wolf eat probability</div>
+          <input
+            type="range"
+            min="0.01"
+            max="1"
+            step="0.01"
+            value="0.7"
+            class="slider"
+            id="wolfEat"
+          />
+          <div class="value"></div>
+        </div>
+        <div class="input" id="wolfWalk">
+          <div class="label">Wolf walking probability</div>
+          <input
+            type="range"
+            min="0.01"
+            max="1"
+            step="0.01"
+            value="0.9"
+            class="slider"
+            id="wolfWalk"
+          />
+          <div class="value"></div>
+        </div>
+        <div class="input" id="wolfApperance">
+          <div class="label">Wolf apperance probability</div>
+          <input
+            type="range"
+            min="0.01"
+            max="0.5"
+            step="0.01"
+            value="0.1"
+            class="slider"
+            id="wolfApperance"
+          />
+          <div class="value"></div>
+        </div>
+        <div class="input" id="rectSize">
+          <div class="label">Rect size</div>
+          <input
+            type="range"
+            min="1"
+            max="16"
+            step="1"
+            value="4"
+            class="slider"
+            id="rectSize"
+          />
+          <div class="value"></div>
+        </div>
         <div class="row">
           <div class="button" id="start" onclick="start()">Start</div>
           <div class="button" id="pause" onclick="pause()">Pause</div>
@@ -39,7 +117,8 @@
     let wolfEatRatio = new Value(0);
     let wolfWalkRatio = new Value(0);
     let rabbitBirthRatio = new Value(0);
-    let rabbitApperance = new Value(0);
+    let rabbitApperance = new Value(0.2);
+    let wolfApperance = new Value(0.1);
     let rectSize = new Value(0);
 
     let symulation;
@@ -48,10 +127,36 @@
     const wolvesNode = document.querySelector("#wolves");
     const rabbitsNode = document.querySelector("#rabbits");
 
+    setOnChange("rabbitBirth", rabbitBirthRatio);
+    setOnChange("wolfEat", wolfWalkRatio);
+    setOnChange("wolfWalk", wolfEatRatio);
+    setOnChange("rabbitApperance", rabbitApperance);
+    setOnChange("wolfApperance", wolfApperance);
+    setOnChange("rectSize", rectSize);
     init();
 
+    function setOnChange(id, observableVariable) {
+      let onChangeFunction = (sliderNode, id) => {
+        let lineValue = document.querySelector(".input#" + id + " .value");
+        lineValue.innerHTML = sliderNode.value;
+        observableVariable.value = slider.value;
+      };
+      let slider = document.querySelector(".input .slider#" + id);
+      slider.onchange = slider.oninput = () => onChangeFunction(slider, id);
+      onChangeFunction(slider, id);
+    }
+
     function init() {
-      symulation = new Symulation(200, 200, 0.1, 1, 1, 0.1, 0.1, 4);
+      symulation = new Symulation(
+        800 / rectSize.value,
+        800 / rectSize.value,
+        wolfEatRatio.value,
+        wolfWalkRatio.value,
+        rabbitBirthRatio.value,
+        rabbitApperance.value,
+        wolfApperance.value,
+        rectSize.value
+      );
     }
     function restart() {
       init();

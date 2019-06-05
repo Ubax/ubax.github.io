@@ -21,6 +21,9 @@ body .main #stats .value {
 body .main #stats .label {
   margin-right: 10px;
 }
+body .main #stats .label img {
+  height: 1em;
+}
 body .main #graph {
   width: 800;
   height: 200;
@@ -33,10 +36,15 @@ body .main #fields {
 }
 body .main .container {
   box-sizing: border-box;
-  background-color: #eeeeee;
+  background-color: #3bceac;
   width: 800;
   padding: 15px 12px;
   margin-top: 20px;
+}
+body .main form {
+  background-color: #3bceac;
+  padding: 0.5em;
+  margin-top: 0.25em;
 }
 body .main form .input {
   margin: 10px 0;
