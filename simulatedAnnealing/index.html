@@ -1,0 +1,110 @@
+<HTML>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Monte Carlo Integrals</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/normalize.css@8.0.1/normalize.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="main">
+      <div class="container" id="main">
+        <h3>Simulated Annealing</h3>
+        <div id="temperature"></div>
+        <canvas width="800" height="800" id="graph"></canvas>
+        <div class="button" id="run">Run</div>
+      </div>
+    </div>
+  </body>
+</HTML>
+<script>
+  let animationFrame;
+  let graph = [];
+  let points = [];
+
+  function maxPoint(arr) {
+    let max = { x: -10000, y: -10000 };
+    arr.forEach(
+      ({ x: x, y: y }) =>
+        (max = { x: Math.max(max.x, x), y: Math.max(max.y, y) })
+    );
+    return max;
+  }
+  function minPoint(arr) {
+    let min = { x: 10000, y: 10000 };
+    arr.forEach(
+      ({ x: x, y: y }) =>
+        (min = { x: Math.min(min.x, x), y: Math.min(min.y, y) })
+    );
+    return min;
+  }
+
+  let fun = x =>
+    Math.sin(2 * Math.pow(x, 2) + Math.pow(x, 3) + Math.pow(x, 5)) /
+    Math.pow(Math.abs(x) + 0.1, 4) /
+    Math.pow(Math.abs(x) + 5, 2);
+
+  for (x = -3; x <= 3; x += 0.001) graph.push({ x: x, y: fun(x) });
+
+  let temperature = 0.99;
+  let i = 0;
+  let current_point_x = Math.random() * 6 - 3;
+
+  function simulate() {
+    const canvas = document.querySelector("canvas#graph");
+    const ctx = canvas.getContext("2d");
+    let max = maxPoint(graph);
+    let min = minPoint(graph);
+    let ratioX = canvas.width / (max.x - min.x + 0.1);
+    let ratioY = canvas.height / (max.y - min.y + 0.1);
+    let deltaX = -min.x * ratioX;
+    let deltaY = -min.y * ratioY;
+    let drawPoint = (point, size = 2) =>
+      ctx.fillRect(
+        point.x * ratioX + deltaX,
+        point.y * ratioY + deltaY,
+        size,
+        size
+      );
+    ctx.fillStyle = "#FFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(deltaX, 0, 2, canvas.height);
+    ctx.fillRect(0, deltaY, canvas.width, 2);
+    ctx.fillStyle = "#22F";
+    graph.forEach(point => {
+      drawPoint(point);
+    });
+
+    ctx.fillStyle = "#F22";
+    let new_point_x = Math.random() * 6 - 3;
+    if (fun(new_point_x) > fun(current_point_x)) {
+      current_point_x = new_point_x;
+    } else if (Math.random() < temperature) {
+      current_point_x = new_point_x;
+    }
+    if (i >= 99) {
+      temperature *= 0.9;
+      i = 0;
+    } else i++;
+    points.push({ x: current_point_x, y: fun(current_point_x) });
+    points.forEach((point, i) => {
+      let size = 2;
+      if (i > points.length / 2) size = 4;
+      if (i > points.length * 0.9) size = 6;
+      if (i >= points.length - 2) ctx.fillStyle = "#FF2";
+      if (i >= points.length - 1) ctx.fillStyle = "#2F2";
+      drawPoint(point, size);
+    });
+    document.querySelector("#temperature").innerHTML = temperature.toString();
+    if (temperature <= 0.0000001) return;
+    animationFrame = requestAnimationFrame(simulate);
+  }
+  document
+    .querySelector(".button#run")
+    .addEventListener("click", _ => simulate());
+</script>

@@ -1,0 +1,98 @@
+<HTML>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Monte Carlo Integrals</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/normalize.css@8.0.1/normalize.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="main">
+      <div class="container" id="orzel_reszka">
+        <h3>Orzeł Reszka</h3>
+        <canvas width="400" height="400" id="orzel_reszka"></canvas>
+        <div class="button" id="orzel_reszka">Run</div>
+      </div>
+      <div class="container" id="podstawowa">
+        <h3>Podstawowa</h3>
+        <canvas width="400" height="400" id="podstawowa"></canvas>
+        <div class="button" id="podstawowa">Run</div>
+      </div>
+      <div class="container" id="srednia_wazona">
+        <h3>Średnia ważona</h3>
+        <canvas width="400" height="400" id="srednia_wazona"></canvas>
+        <div class="button" id="srednia_wazona">Run</div>
+      </div>
+    </div>
+  </body>
+</HTML>
+<script>
+  let fun = x => Math.sin(x * 3.14);
+  function orzel_reszka(number_of_iterations, fun) {
+    const canvas = document.querySelector("canvas#orzel_reszka");
+    const ctx = canvas.getContext("2d");
+    let below_function = 0;
+    for (i = 0; i < number_of_iterations; i++) {
+      let x = Math.random();
+      let y = Math.random();
+      if (fun(x) >= y) {
+        below_function++;
+        ctx.fillStyle = "#44DD44";
+      } else {
+        ctx.fillStyle = "#DD4444";
+      }
+      ctx.fillRect(x * canvas.width, canvas.height - y * canvas.height, 2, 2);
+    }
+    return below_function / number_of_iterations;
+  }
+  function podstawowa(number_of_iterations, fun) {
+    const canvas = document.querySelector("canvas#podstawowa");
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#333";
+    let sum = 0;
+    for (i = 0; i < number_of_iterations; i++) {
+      let x = Math.random();
+      sum += fun(x);
+      ctx.fillRect(
+        x * canvas.width,
+        canvas.height - fun(x) * canvas.height,
+        2,
+        2
+      );
+    }
+    return sum / number_of_iterations;
+  }
+  function srednia_wazona(number_of_iterations, fun) {
+    const canvas = document.querySelector("canvas#srednia_wazona");
+    const ctx = canvas.getContext("2d");
+    const lambda = 3;
+    const CDF = x => 1 - Math.exp(-lambda * x);
+    const invertedCDF = x => -Math.log(1 - x) / lambda;
+    let sum = 0;
+    for (i = 0; i < number_of_iterations; i++) {
+      let y = Math.random();
+      x = invertedCDF(y);
+      sum += fun(x);
+      ctx.fillRect(
+        x * canvas.width,
+        canvas.height - fun(x) * canvas.height,
+        2,
+        2
+      );
+    }
+    return sum / number_of_iterations;
+  }
+  document
+    .querySelector(".button#orzel_reszka")
+    .addEventListener("click", _ => console.log(orzel_reszka(8000, fun)));
+  document
+    .querySelector(".button#podstawowa")
+    .addEventListener("click", _ => console.log(podstawowa(8000, fun)));
+  document
+    .querySelector(".button#srednia_wazona")
+    .addEventListener("click", _ => console.log(srednia_wazona(8000, fun)));
+</script>
