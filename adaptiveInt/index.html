@@ -1,0 +1,155 @@
+<HTML>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Adaptive Integration</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/normalize.css@8.0.1/normalize.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="main">
+      <div class="container" id="orzel_reszka">
+        <h3>Adaptive Integration</h3>
+        <canvas width="800" height="800" id="graph"></canvas>
+        <div class="button" id="run">Run</div>
+      </div>
+    </div>
+  </body>
+</HTML>
+<script>
+  let animationFrame;
+  let graph = [];
+  let points = [];
+  let pointNum = 0;
+
+  let fun = x => (x < 0 ? (Math.sin(x) * x * x) / 10 + 10 : 10 - x);
+
+  function maxPoint(arr) {
+    let max = { x: -10000, y: -10000 };
+    arr.forEach(
+      ({ x: x, y: y }) =>
+        (max = { x: Math.max(max.x, x), y: Math.max(max.y, y) })
+    );
+    return max;
+  }
+  function minPoint(arr) {
+    let min = { x: 10000, y: 10000 };
+    arr.forEach(
+      ({ x: x, y: y }) =>
+        (min = { x: Math.min(min.x, x), y: Math.min(min.y, y) })
+    );
+    return min;
+  }
+
+  const sleep = milliseconds => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+  };
+
+  async function simulate() {
+    const canvas = document.querySelector("canvas#graph");
+    const ctx = canvas.getContext("2d");
+    let max = maxPoint(graph);
+    let min = minPoint(graph);
+    if (min.y > 0) min.y = -min.y;
+    if (max.y < 0) max.y = -max.y / 100;
+    if (min.x > 0) min.x = -min.x;
+    if (max.x < 0) max.x = -max.x / 100;
+    let ratioX = canvas.width / (max.x - min.x + 0.1);
+    let ratioY = canvas.height / (max.y - min.y + 0.1);
+    let deltaX = -min.x * ratioX;
+    let deltaY = -min.y * ratioY;
+
+    let calcPoint = point => ({
+      x: point.x * ratioX + deltaX,
+      y: point.y * ratioY + deltaY
+    });
+    let drawPoint = (point, size = 2) =>
+      ctx.fillRect(calcPoint(point).x, calcPoint(point).y, size, size);
+    let drawLine = (point, size = 2) =>
+      ctx.fillRect(
+        calcPoint(point).x,
+        calcPoint({ x: point.x, y: 0 }).y,
+        size,
+        calcPoint(point).y - calcPoint({ x: point.x, y: 0 }).y
+      );
+
+    ctx.fillStyle = "#FFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(deltaX, 0, 2, canvas.height);
+    ctx.fillRect(0, deltaY, canvas.width, 2);
+    ctx.fillStyle = "#22F";
+    graph.forEach(point => {
+      drawPoint(point);
+    });
+
+    ctx.fillStyle = "RGBA(255,30,30,0.5)";
+    ctx.strokeStyle = "RGBA(255,30,30,1)";
+    ctx.beginPath();
+    let startPoint = calcPoint({ x: min.x, y: fun(min.x) });
+    let endPoint = calcPoint({ x: max.x, y: fun(max.x) });
+    ctx.moveTo(startPoint.x, startPoint.y);
+    points
+      .filter((_, i) => i <= pointNum)
+      .sort((a, b) => a.x - b.x)
+      .forEach(point => ctx.lineTo(calcPoint(point).x, calcPoint(point).y));
+    ctx.lineTo(endPoint.x, endPoint.y);
+    ctx.lineTo(endPoint.x, calcPoint({ x: max.x, y: 0 }).y);
+    ctx.lineTo(
+      calcPoint({ x: min.x, y: 0 }).x,
+      calcPoint({ x: min.x, y: 0 }).y
+    );
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#F22";
+    points.forEach((point, i) => {
+      if (i <= pointNum) {
+        drawLine(point, 1);
+      }
+    });
+    pointNum++;
+    if (pointNum >= points.length) {
+      console.log(
+        points
+          .filter((_, i) => i <= pointNum)
+          .sort((a, b) => {
+            a.x - b.x;
+          })
+      );
+      return;
+    }
+    await sleep(150);
+    animationFrame = requestAnimationFrame(simulate);
+  }
+
+  function simpson(fun, a, b) {
+    return ((b - a) / 6) * (fun(a) + 4 * fun((a + b) / 2) + fun(b));
+  }
+
+  function integrate(fun, a, b, eps) {
+    let m = (a + b) / 2;
+    points.push({ x: (a + b) / 2, y: fun(m) });
+    if (
+      Math.abs(simpson(fun, a, m) + simpson(fun, m, b) - simpson(fun, a, b)) >
+      15 * eps
+    ) {
+      return integrate(fun, a, m, eps) + integrate(fun, m, b, eps);
+    }
+    return simpson(fun, a, b);
+  }
+
+  console.log(integrate(fun, -13, 9, 0.0001));
+
+  for (x = -13; x <= -5; x += 0.001) graph.push({ x: x, y: fun(x) });
+  for (x = -5; x <= 0; x += 0.01) graph.push({ x: x, y: fun(x) });
+  for (x = 0; x <= 9; x += 0.025) graph.push({ x: x, y: fun(x) });
+
+  document
+    .querySelector(".button#run")
+    .addEventListener("click", _ => simulate());
+</script>
