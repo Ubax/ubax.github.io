@@ -100,7 +100,8 @@
       if (i >= points.length - 1) ctx.fillStyle = "#2F2";
       drawPoint(point, size);
     });
-    document.querySelector("#temperature").innerHTML = temperature.toString();
+    document.querySelector("#temperature").innerHTML =
+      (temperature * 1000 + 20).toString() + "&deg C";
     if (temperature <= 0.0000001) return;
     animationFrame = requestAnimationFrame(simulate);
   }
